@@ -8,6 +8,7 @@ Cursor AI Skills for the Identity Fraud squad.
 |---|---|
 | `optimize-threshold` | Optimize anti-fraud policy thresholds using Wind Tunnel 4Policies |
 | `create-pptx` | Generate PowerPoint presentations with Nubank visual identity |
+| `monitoring-segmentation` | Segment numerical variables into clusters for monitoring & anomaly detection |
 
 ## Setup
 
@@ -21,8 +22,9 @@ git clone https://github.com/marinaborges2/identity-fraud-skills.git
 
 ```bash
 mkdir -p ~/.cursor/skills
-ln -s $(pwd)/optimize-threshold ~/.cursor/skills/optimize-threshold
-ln -s $(pwd)/create-pptx ~/.cursor/skills/create-pptx
+ln -s $(pwd)/identity-fraud-skills/optimize-threshold ~/.cursor/skills/optimize-threshold
+ln -s $(pwd)/identity-fraud-skills/create-pptx ~/.cursor/skills/create-pptx
+ln -s $(pwd)/identity-fraud-skills/monitoring-segmentation ~/.cursor/skills/monitoring-segmentation
 ```
 
 ### 3. Setup assets for `create-pptx`

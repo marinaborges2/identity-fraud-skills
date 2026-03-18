@@ -1,0 +1,7 @@
+# Assets (binary files extracted locally)
+create-pptx/assets/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

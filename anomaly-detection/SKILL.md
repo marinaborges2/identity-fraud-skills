@@ -55,6 +55,22 @@ Known dependency notebooks:
 
 A local copy of `kyc_utils` is saved at `kyc_utils_reference.scala` in the workspace for quick reference.
 
+### Resolving `datasets()` table names
+
+The `datasets("name")` function in Scala calls `spark.table(translateName("name"))`. The `translateName` function is an internal library that does NOT follow a simple naming convention — it uses an internal registry.
+
+**To find the actual table name**, run this in a Databricks Scala cell:
+```scala
+import etl.databricks.DatabricksHelpers.translateName
+println(translateName("contract-paparazzi/docs-captures"))
+```
+
+Known mappings:
+| `datasets()` name | Actual table |
+|---|---|
+| `"contract-paparazzi/docs-captures"` | `br__contract.paparazzi__docs_captures` |
+| `"dataset/acquisition-funnel"` | `br__dataset.acquisition_funnel` |
+
 Use the Databricks MCP or REST API to read notebooks:
 ```python
 # via REST API
@@ -188,13 +204,14 @@ payload = {"path": "/Users/user@nubank.com.br/notebook_name",
 | localCheckpoint data loss | `CHECKPOINT_RDD_BLOCK_ID_NOT_FOUND` | Use `.checkpoint()` instead |
 | Wrong table for a country | `TABLE_OR_VIEW_NOT_FOUND` | Check source notebook per country |
 | Hidden `.transform()` logic | `UNRESOLVED_COLUMN` for columns like `initial_limit` | Read `%run` dependency notebooks (e.g., `kyc_utils`) to find which table provides the column |
+| `translateName` table resolution | `TABLE_OR_VIEW_NOT_FOUND` for `datasets()` calls | Run `println(translateName("dataset-name"))` in Scala to get actual table path |
 | Country missing from alert | Country silently omitted from cross-country overview | Always list all expected countries; track skipped ones in `skipped_countries` dict |
 | Indentation in loop | Code never executes (dead code after `continue`) | Verify indentation after `if/continue` |
 | Empty results list | `ValueError: No objects to concatenate` | Guard `if not all_results:` |
 | NaN in percentages | `nan%` in alert | Check `pd.notna()` and `> 0` before division |
 | Negative expected range | `Expected range: -5 – 10` | `max(0, iqr_lower)` |
 | Absurd percentages / false positives | `1192675%` or country with immature baseline alerting | Exclude from `confirmed_anomaly` when `deviation_pct > 500%`; show "_insufficient baseline_" in overview |
-| Old anomalies triggering alerts | Alert for anomalies from months ago | Filter by `ALERT_LOOKBACK_DAYS = 15` before sending |
+| Empty summary DataFrame | `ValueError: can not infer schema from empty dataset` | Guard `if summary.empty:` before `spark.createDataFrame(summary)` |
 
 ## Metric Focus
 

@@ -115,7 +115,22 @@ With `ALERT_LOOKBACK_DAYS` filter, clean customer links, cross-country overview 
 
 ### Cell 17 — Summary Table
 
-Displays all confirmed anomalies.
+```python
+if results_df.empty:
+    print("No results — skipping summary.")
+else:
+    summary = (
+        results_df[results_df["confirmed_anomaly"] == True]
+        [["country", "time_window", "cohort_week", "total_events", "unique_customers",
+          "rolling_mean", "z_score", "iqr_lower", "iqr_upper"]]
+        .sort_values(["cohort_week", "country", "time_window"], ascending=[False, True, True])
+    )
+    summary["deviation_pct"] = ((summary["unique_customers"] - summary["rolling_mean"]) / summary["rolling_mean"] * 100).round(1)
+    if summary.empty:
+        print("No confirmed anomalies to display.")
+    else:
+        display(spark.createDataFrame(summary))
+```
 
 ## Databricks API Helpers
 

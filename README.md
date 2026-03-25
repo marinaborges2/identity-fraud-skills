@@ -1,52 +1,69 @@
-# Identity Fraud Skills
+# Identity Fraud — Cursor AI Skills
 
-Cursor AI Skills for the Identity Fraud squad.
+Modular Cursor AI Skills for automated anomaly detection on fraud indicators across BR, CO, and MX.
 
-## Skills
-
-| Skill | Description |
-|---|---|
-| `optimize-threshold` | Optimize anti-fraud policy thresholds using Wind Tunnel 4Policies |
-| `create-pptx` | Generate PowerPoint presentations with Nubank visual identity |
-| `monitoring-segmentation` | Segment numerical variables into clusters for monitoring & anomaly detection |
-
-## Setup
-
-### 1. Clone this repository
+## Quick Install
 
 ```bash
 git clone https://github.com/marinaborges2/identity-fraud-skills.git
-```
-
-### 2. Symlink skills to Cursor
-
-```bash
-mkdir -p ~/.cursor/skills
-ln -s $(pwd)/identity-fraud-skills/optimize-threshold ~/.cursor/skills/optimize-threshold
-ln -s $(pwd)/identity-fraud-skills/create-pptx ~/.cursor/skills/create-pptx
-ln -s $(pwd)/identity-fraud-skills/monitoring-segmentation ~/.cursor/skills/monitoring-segmentation
-```
-
-### 3. Setup assets for `create-pptx`
-
-The `create-pptx` skill requires logo assets extracted from a Nubank reference presentation.
-
-Run the setup script with any Nubank `.pptx` file as reference:
-
-```bash
-pip install python-pptx --index-url https://pypi.org/simple/
-python create-pptx/extract_assets.py <path-to-nubank-presentation.pptx>
-```
-
-This extracts the Nu logo, section logo, and cover decoration image into `create-pptx/assets/`.
-
-## Updating
-
-When skills are updated, just `git pull` to get the latest version:
-
-```bash
 cd identity-fraud-skills
-git pull
+bash install.sh
 ```
 
-Since the skills are symlinked, Cursor picks up changes automatically.
+## Skills
+
+| Skill | What it does | Use when |
+|---|---|---|
+| **fraud-monitoring** | Full end-to-end pipeline (composes all below) | "Create anomaly monitoring for Fast Cash Out" |
+| **data-extraction** | Reads Databricks source notebooks, generates PySpark per country | "Extract data from this Scala notebook" |
+| **statistical-detection** | Z-score + IQR anomaly detection on time series | "Detect anomalies in this weekly data" |
+| **slack-alerting** | Narrative Slack alerts + Parquet export | "Send alert for these detection results" |
+
+## Architecture
+
+```
+fraud-monitoring (orchestrator)
+    ├── data-extraction       → Pandas DataFrame (pdf)
+    ├── statistical-detection → Pandas DataFrame (results_df) + skipped_countries
+    └── slack-alerting        → Slack message + Parquet files
+```
+
+Each skill defines clear **input/output contracts**, so they can be composed in new ways:
+
+- `fraud-monitoring` = data-extraction + statistical-detection + slack-alerting
+- `product-monitoring` = data-extraction + statistical-detection + slack-alerting (different source)
+- `model-drift` = statistical-detection + slack-alerting (custom data)
+- `daily-report` = data-extraction + slack-alerting (no detection)
+
+## Usage
+
+After installing, just ask Cursor:
+
+> "Create anomaly detection monitoring for Fast Cash Out from the quicksight_anomaly_detection notebook"
+
+The `fraud-monitoring` skill will automatically orchestrate all three mini-skills.
+
+For standalone use:
+
+> "Detect anomalies in this DataFrame using Z-score and IQR"
+
+Cursor will use only the `statistical-detection` skill.
+
+## Detection Methodology
+
+- **Z-score** (rolling 12-week window, threshold ±3.0σ)
+- **IQR** (rolling 12-week window, multiplier 2.0x)
+- Anomaly confirmed only when **both methods agree** + deviation ≥ 30%
+- Deviations > 500% treated as immature baseline
+- Minimum 10 weeks of data required
+- Alerts only for last 15 days
+
+## Indicators Implemented
+
+| Indicator | Description |
+|---|---|
+| Change Personal Info | Email, phone or address changes after onboarding |
+| Fast Cash Out | High cash out ratio vs. initial limit after release |
+| Login Frequency | Zero logins after account release |
+| Flutter Flow | Legacy document capture flow usage |
+| First Payment Default | First delinquency within 40 days of release |

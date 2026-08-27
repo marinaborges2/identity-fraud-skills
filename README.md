@@ -18,6 +18,7 @@ bash install.sh
 | **data-extraction** | Reads Databricks source notebooks, generates PySpark per country | "Extract data from this Scala notebook" |
 | **statistical-detection** | Z-score + IQR anomaly detection on time series | "Detect anomalies in this weekly data" |
 | **slack-alerting** | Narrative Slack alerts + Parquet export | "Send alert for these detection results" |
+| **new-monitoring-geo** | Onboard a new geo into the unified monitoring dashboard (sources → notebook → S3 → configs → HTML/policy) | "Add US/Troy to the monitoring dash", "nova geo no dashboard" |
 
 ## Architecture
 

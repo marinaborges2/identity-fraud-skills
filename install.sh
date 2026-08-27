@@ -4,7 +4,7 @@
 DEST="$HOME/.cursor/skills"
 mkdir -p "$DEST"
 
-SKILLS=("data-extraction" "statistical-detection" "slack-alerting" "fraud-monitoring" "anomaly-detection")
+SKILLS=("data-extraction" "statistical-detection" "slack-alerting" "fraud-monitoring" "anomaly-detection" "create-pptx" "optimize-threshold" "monitoring-segmentation" "new-monitoring-geo")
 
 for skill in "${SKILLS[@]}"; do
     if [ -d "$skill" ]; then

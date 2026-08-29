@@ -1,6 +1,25 @@
 # New Monitoring Geo — Reference
 
-Supporting detail for [`SKILL.md`](SKILL.md). Read when implementing Phases 2–5.
+Supporting detail for [`SKILL.md`](SKILL.md). Read when implementing Phases 1–5.
+
+---
+
+## Free Willy discovery (mandatory)
+
+Portal: https://backoffice.nubank.com.br/free-willy/  
+Architecture / Datasetcard notes: https://nubank.atlassian.net/wiki/spaces/DMED/pages/264261536789
+
+**Goal:** every notebook input is a registered dataset the agent can point to in Free Willy (name, country, domain/subdomain, owner squad, present on ETL).
+
+Suggested flow:
+
+1. In Free Willy **Search (Datasetcard)**, query by geo keywords (`troy`, `united states`, `us`, `acquisition`, `big_mama`, `risk_platform`, …).
+2. Prefer exact series-contract / contract / data_source names (`nu-…/contract/…` ↔ Spark `etl.<country>__contract.*`).
+3. Open Datasetcard → confirm schema attributes exist before coding joins (do not invent columns).
+4. Optionally cross-check in Databricks SQL against `usr.free_willy.search` (or equivalent catalog views) that `is_present_on_etl` is true.
+5. Put the Free Willy name in the capability matrix and in notebook comments above each `spark.table(...)`.
+
+If Free Willy returns nothing for a need → mark metric **null**. Do not invent a table name “that should exist”.
 
 ---
 
@@ -78,7 +97,9 @@ Capture tables reuse the same shape; metric is share of FID with `released_at IS
 
 **Parquet / contract:** null columns + `unavailable_reason` is fine for honesty.
 
-**Dashboard chart:** if the UI hides series when all values are null, inject a **zero-filled** time series aligned to fraud-rate `periods` so "Total Losses Over Time" shows a flat line at currency 0. Document that zeros mean "no loss feed", not "measured zero loss", unless true.
+**Dashboard chart:** if the UI hides series when all values are null, inject a **zero-filled** time series aligned to fraud-rate `periods` so "Total Losses Over Time" shows a flat line at currency 0.
+
+**Honesty rule:** handoff and any insight text must say zeros mean **"no Free Willy / helper loss feed — chart UX only"**, not **"measured zero loss"**, unless a Free Willy loss feed was queried and truly returned zeros.
 
 ---
 
